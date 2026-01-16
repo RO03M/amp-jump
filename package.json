@@ -1,5 +1,9 @@
 {
   "name": "amp-jump",
+  "author": {
+    "name": "romera",
+    "url": "https://romera.dev"
+  },
   "displayName": "amp.jump",
   "description": "Quickly jump to any part of the screen",
   "version": "0.0.1",
