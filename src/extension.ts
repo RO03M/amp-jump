@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { calcLabel, getColumnsFromLine } from './utils.js';
+import { calcLabel, chunk, getColumnsFromLine } from './utils.js';
 
 interface Label {
 	text: string;
@@ -18,21 +18,23 @@ interface Line {
 
 interface AppState {
 	active: boolean;
-	labelMap: Map<string, Label>,
-	labelKey: number
+	labelMap: Map<string, Label>;
+	labelKey: number;
+	decorations: vscode.TextEditorDecorationType[];
 }
 
-const hiddenDecoration = vscode.window.createTextEditorDecorationType({
-	color: "rgba(0, 0, 0, 0)",
-	backgroundColor: "rgb(0, 0, 0)"
-});
-
-const labelDecoration = vscode.window.createTextEditorDecorationType({
-	before: {
-		color: "#FFA500",
-		backgroundColor: "rgb(0, 0, 0)"
-	}
-});
+function createLabelDecoration(): vscode.TextEditorDecorationType {
+	return vscode.window.createTextEditorDecorationType({
+		color: "transparent", 
+		before: {
+			color: "#FFA500",
+			backgroundColor: "black",
+			width: '2ch',
+			margin: '0 -2ch 0 0',
+			fontWeight: 'bold; border-radius: 2px;'
+		}
+	});
+}
 
 function getVisibleText(editor: vscode.TextEditor): Line[] {
 	const result: Line[] = [];
@@ -54,26 +56,27 @@ function getVisibleText(editor: vscode.TextEditor): Line[] {
 	return result;
 }
 
-function renderLabels(editor: vscode.TextEditor, labels: Label[]) {
+function renderLabels(state: AppState, editor: vscode.TextEditor, labels: Label[]) {
 	const options: vscode.DecorationOptions[] = [];
-	const hiddenRanges: vscode.Range[] = [];
 	for (const label of labels) {
-		const position = new vscode.Position(label.line, label.column);
-
-		hiddenRanges.push(new vscode.Range(position, position.translate(0, label.text.length)))
 		options.push({
-			range: new vscode.Range(position, position),
+			range: new vscode.Range(label.line, label.column, label.line, label.column + 2),
 			renderOptions: {
 				before: {
-					contentText: label.text,
-					width: "0"
+					contentText: label.text
 				}
 			}
 		});
 	}
 
-	editor?.setDecorations(hiddenDecoration, hiddenRanges);
-	editor?.setDecorations(labelDecoration, options);
+	const chunkedOptions = chunk(options, 89);
+
+	for (const chunk of chunkedOptions) {
+		const decoration = createLabelDecoration();
+		
+		editor?.setDecorations(decoration, chunk);
+		state.decorations.push(decoration);
+	}
 }
 
 function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, Label> {
@@ -87,7 +90,6 @@ function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, 
 
 		for (const columnPosition of positions) {
 			const labelText = calcLabel(state.labelKey);
-			// console.log(labelText, state.labelKey, line.content);
 
 			labelMap.set(labelText, {
 				text: labelText,
@@ -104,7 +106,9 @@ function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, 
 }
 
 function render(state: AppState) {
+	console.time("render");
 	const editors = vscode.window.visibleTextEditors;
+	clearDecorations(state);
 
 	const maps: Map<string, Label>[] = [];
 	state.labelKey = 62;
@@ -114,20 +118,30 @@ function render(state: AppState) {
 		maps.push(labelMap);
 
 		const labels = Array.from(labelMap.values());
-		renderLabels(editor, labels);
+		renderLabels(state, editor, labels);
 	}
 
 	state.labelMap = new Map(maps.flatMap((map) => [...map]));
-	console.log(state.labelMap);
+	console.timeEnd("render");
+	console.log(state.decorations);
+}
+
+function clearDecorations(state: AppState) {
+	for (const decoration of state.decorations) {
+		decoration.dispose();
+	}
+
+	state.decorations = [];
 }
 
 function turnOff(state: AppState) {
-	const editors = vscode.window.visibleTextEditors;
+	// const editors = vscode.window.visibleTextEditors;
 
-	for (const editor of editors) {
-		editor.setDecorations(hiddenDecoration, []);
-		editor.setDecorations(labelDecoration, []);
-	}
+	// for (const editor of editors) {
+	// 	// editor.setDecorations(hiddenDecoration, []);
+	// 	// editor.setDecorations(labelDecoration, []);
+	// }
+	clearDecorations(state);
 
 	vscode.commands.executeCommand("setContext", "amp-jump.on", false);
 	state.active = false;
@@ -142,16 +156,11 @@ async function focusEditorAt(
 
 	editor.selection = new vscode.Selection(position, position);
 
-	editor.revealRange(
-		new vscode.Range(position, position),
-		vscode.TextEditorRevealType.InCenter
-	);
+	editor.revealRange(new vscode.Range(position, position));
 
-	await vscode.window.showTextDocument(editor.document, {
-		viewColumn: editor.viewColumn,
-		preserveFocus: false,
-		selection: editor.selection
-	});
+	if (vscode.window.activeTextEditor !== editor) {
+		await vscode.window.showTextDocument(editor.document, editor.viewColumn);
+	}
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -160,7 +169,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const state: AppState = {
 		active: false,
 		labelKey: 62,
-		labelMap: new Map()
+		labelMap: new Map(),
+		decorations: []
 	};
 
 	const activeDecoration = vscode.window.createTextEditorDecorationType({
@@ -192,7 +202,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const label = state.labelMap.get(input);
 
-		console.log(label, state, input, label?.editor, vscode.window.visibleTextEditors.includes(label!.editor));
 		if (!label) {
 			return;
 		}
