@@ -1,15 +1,25 @@
 import * as vscode from 'vscode';
-import { getColumnsFromLine } from './utils.js';
+import { calcLabel, getColumnsFromLine } from './utils.js';
 
 interface Label {
 	text: string;
 	line: number;
 	column: number;
+	/**
+	 * Reference to the editor that the label was written on
+	 */
+	editor: vscode.TextEditor;
 }
 
 interface Line {
 	content: string;
 	lineNumber: number;
+}
+
+interface AppState {
+	active: boolean;
+	labelMap: Map<string, Label>,
+	labelKey: number
 }
 
 const hiddenDecoration = vscode.window.createTextEditorDecorationType({
@@ -24,12 +34,7 @@ const labelDecoration = vscode.window.createTextEditorDecorationType({
 	}
 });
 
-function getVisibleText(): Line[] {
-	const editor = vscode.window.activeTextEditor;
-	if (!editor) {
-		return [];
-	}
-
+function getVisibleText(editor: vscode.TextEditor): Line[] {
 	const result: Line[] = [];
 	const document = editor.document;
 
@@ -71,100 +76,140 @@ function renderLabels(editor: vscode.TextEditor, labels: Label[]) {
 	editor?.setDecorations(labelDecoration, options);
 }
 
-function buildLabelMap(editor: vscode.TextEditor): Map<string, Label> {
-	const charMap = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
+function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, Label> {
 	const labelMap = new Map<string, Label>();
 
-	const lines = getVisibleText();
-
-	let charMapX = 0;
-	let charMapY = 0;
+	const lines = getVisibleText(editor);
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
 		const positions = getColumnsFromLine(line.content);
 
 		for (const columnPosition of positions) {
-			if (charMapX >= charMap.length) {
-				break;
-			}
-
-			if (charMapY >= charMap.length) {
-				charMapY = 0;
-				charMapX++;
-			}
-			
-			const labelText = `${charMap.charAt(charMapX)}${charMap.charAt(charMapY)}`;
+			const labelText = calcLabel(state.labelKey);
+			// console.log(labelText, state.labelKey, line.content);
 
 			labelMap.set(labelText, {
 				text: labelText,
 				column: columnPosition,
-				line: line.lineNumber
+				line: line.lineNumber,
+				editor: editor
 			});
 
-			charMapY++;
+			state.labelKey++;
 		}
 	}
 
 	return labelMap;
 }
 
+function render(state: AppState) {
+	const editors = vscode.window.visibleTextEditors;
+
+	const maps: Map<string, Label>[] = [];
+	state.labelKey = 62;
+
+	for (const editor of editors) {
+		const labelMap = buildLabelMap(editor, state);
+		maps.push(labelMap);
+
+		const labels = Array.from(labelMap.values());
+		renderLabels(editor, labels);
+	}
+
+	state.labelMap = new Map(maps.flatMap((map) => [...map]));
+	console.log(state.labelMap);
+}
+
+function turnOff(state: AppState) {
+	const editors = vscode.window.visibleTextEditors;
+
+	for (const editor of editors) {
+		editor.setDecorations(hiddenDecoration, []);
+		editor.setDecorations(labelDecoration, []);
+	}
+
+	vscode.commands.executeCommand("setContext", "amp-jump.on", false);
+	state.active = false;
+}
+
+async function focusEditorAt(
+	editor: vscode.TextEditor,
+	line: number,
+	column: number
+) {
+	const position = new vscode.Position(line, column);
+
+	editor.selection = new vscode.Selection(position, position);
+
+	editor.revealRange(
+		new vscode.Range(position, position),
+		vscode.TextEditorRevealType.InCenter
+	);
+
+	await vscode.window.showTextDocument(editor.document, {
+		viewColumn: editor.viewColumn,
+		preserveFocus: false,
+		selection: editor.selection
+	});
+}
+
 export function activate(context: vscode.ExtensionContext) {
-	const editor = vscode.window.activeTextEditor; // TODO add support for multiple editors
 	const config = vscode.workspace.getConfiguration("amp-jump");
 	const activeBackgroundColor = config.get<string>("dimColor", "rgba(128, 128, 128, 0.5)");
+	const state: AppState = {
+		active: false,
+		labelKey: 62,
+		labelMap: new Map()
+	};
 
 	const activeDecoration = vscode.window.createTextEditorDecorationType({
 		backgroundColor: activeBackgroundColor
 	});
 
 	const disposable = vscode.commands.registerCommand('amp-jump.jumpMode', () => {
-		console.log("editor", !editor);
-		if (!editor) {
+		vscode.commands.executeCommand("setContext", "amp-jump.on", true);
+		state.active = true;
+		render(state);
+	});
+
+	const onScroll = vscode.window.onDidChangeTextEditorVisibleRanges(() => {
+		if (!state.active) {
 			return;
 		}
 
-		// const visibleText = getVisibleText();
-		// const lines = visibleText?.split("\n");
-		// const labels: Label[] = [];
-		// for (let i = 0; i < lines.length; i++) {
-		// 	const line = lines[i];
-		// 	const positions = getColumnsFromLine(line);
-
-		// 	for (const columnPosition of positions) {
-		// 		// renderLabels(editor, "aa", i, position);
-		// 		labels.push({
-		// 			text: "aa",
-		// 			column: columnPosition,
-		// 			line: i
-		// 		});
-		// 	}
-		// }
-		const labelMap = buildLabelMap(editor);
-		const labels = Array.from(labelMap.values());
-
-		console.log(labels.length);
-
-		renderLabels(editor, labels);
-
-		// renderLabels(editor, [
-		// 	{
-		// 		text: "aa",
-		// 		line: 31,
-		// 		column: 0
-		// 	},
-		// 	{
-		// 		text: "bb",
-		// 		line: 32,
-		// 		column: 1
-		// 	},
-		// ]);
-		// renderLabelAt(editor!, "aa", 0, 1);
+		render(state);
 	});
 
-	context.subscriptions.push(disposable);
+	let input = "";
+
+	function handleInput(char: string) {
+		if (input.length == 2) {
+			input = "";
+		}
+
+		input += char;
+
+		const label = state.labelMap.get(input);
+
+		console.log(label, state, input, label?.editor, vscode.window.visibleTextEditors.includes(label!.editor));
+		if (!label) {
+			return;
+		}
+
+		turnOff(state);
+		focusEditorAt(label.editor, label.line, label.column);
+	}
+
+	const labels = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+
+	context.subscriptions.push(
+		disposable,
+		onScroll,
+		vscode.commands.registerCommand("amp-jump.key.escape", turnOff),
+		// registering all the keybinds commands
+		...labels.map((c) => vscode.commands.registerCommand(`amp-jump.key.${c}`, () => handleInput(c)))
+	);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

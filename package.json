@@ -18,6 +18,323 @@
         "command": "amp-jump.jumpMode",
         "title": "Jump Mode"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "amp-jump.key.escape",
+        "key": "escape",
+        "when": "amp-jump.on"
+      },
+      {
+        "command": "amp-jump.key.a",
+        "key": "a",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.b",
+        "key": "b",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.c",
+        "key": "c",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.d",
+        "key": "d",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.e",
+        "key": "e",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.f",
+        "key": "f",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.g",
+        "key": "g",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.h",
+        "key": "h",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.i",
+        "key": "i",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.j",
+        "key": "j",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.k",
+        "key": "k",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.l",
+        "key": "l",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.m",
+        "key": "m",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.n",
+        "key": "n",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.o",
+        "key": "o",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.p",
+        "key": "p",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.q",
+        "key": "q",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.r",
+        "key": "r",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.s",
+        "key": "s",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.t",
+        "key": "t",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.u",
+        "key": "u",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.v",
+        "key": "v",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.w",
+        "key": "w",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.x",
+        "key": "x",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.y",
+        "key": "y",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.z",
+        "key": "z",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.A",
+        "key": "shift+a",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.B",
+        "key": "shift+b",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.C",
+        "key": "shift+c",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.D",
+        "key": "shift+d",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.E",
+        "key": "shift+e",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.F",
+        "key": "shift+f",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.G",
+        "key": "shift+g",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.H",
+        "key": "shift+h",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.I",
+        "key": "shift+i",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.J",
+        "key": "shift+j",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.K",
+        "key": "shift+k",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.L",
+        "key": "shift+l",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.M",
+        "key": "shift+m",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.N",
+        "key": "shift+n",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.O",
+        "key": "shift+o",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.P",
+        "key": "shift+p",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.Q",
+        "key": "shift+q",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.R",
+        "key": "shift+r",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.S",
+        "key": "shift+s",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.T",
+        "key": "shift+t",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.U",
+        "key": "shift+u",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.V",
+        "key": "shift+v",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.W",
+        "key": "shift+w",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.X",
+        "key": "shift+x",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.Y",
+        "key": "shift+y",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.Z",
+        "key": "shift+z",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.0",
+        "key": "0",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.1",
+        "key": "1",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.2",
+        "key": "2",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.3",
+        "key": "3",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.4",
+        "key": "4",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.5",
+        "key": "5",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.6",
+        "key": "6",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.7",
+        "key": "7",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.8",
+        "key": "8",
+        "when": "amp-jump.on && editorTextFocus"
+      },
+      {
+        "command": "amp-jump.key.9",
+        "key": "9",
+        "when": "amp-jump.on && editorTextFocus"
+      }
     ]
   },
   "scripts": {

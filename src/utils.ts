@@ -15,3 +15,18 @@ export function getColumnsFromLine(line: string): number[] {
 
 	return positions;
 }
+
+export function calcLabel(key: number): string {
+	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	const base = chars.length;
+
+	let result = "";
+	let n = key;
+
+	do {
+		result = chars[n % base] + result;
+		n = Math.floor(n / base) - 1;
+	} while (n >= 0);
+
+	return result;
+}
