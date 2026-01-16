@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import { calcLabel, chunk, getColumnsFromLine } from './utils.js';
+import { calcErgoLabel, calcLabel, chunk, squaredDistance, getColumnsFromLine } from './utils.js';
 
 interface Label {
 	text: string;
 	line: number;
 	column: number;
+	distance: number;
 	/**
 	 * Reference to the editor that the label was written on
 	 */
@@ -24,11 +25,15 @@ interface AppState {
 }
 
 function createLabelDecoration(): vscode.TextEditorDecorationType {
+	const config = vscode.workspace.getConfiguration("amp-jump");
+	const labelColor = config.get<string>("labelColor", "#FFA500");
+	const labelBg = config.get<string>("labelBackgroundColor", "transparent");
+
 	return vscode.window.createTextEditorDecorationType({
 		color: "transparent", 
 		before: {
-			color: "#FFA500",
-			backgroundColor: "black",
+			color: labelColor,
+			backgroundColor: labelBg,
 			width: '2ch',
 			margin: '0 -2ch 0 0',
 			fontWeight: 'bold; border-radius: 2px;'
@@ -83,30 +88,44 @@ function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, 
 	const labelMap = new Map<string, Label>();
 
 	const lines = getVisibleText(editor);
+	const cursorPosition = editor.selection.active;
+
+	const labels: Label[] = [];
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
-		const positions = getColumnsFromLine(line.content);
+		const columns = getColumnsFromLine(line.content);
 
-		for (const columnPosition of positions) {
-			const labelText = calcLabel(state.labelKey);
+		for (const columnPosition of columns) {
+			const position = new vscode.Position(line.lineNumber, columnPosition);
+			const distance = squaredDistance(cursorPosition, position);
 
-			labelMap.set(labelText, {
-				text: labelText,
+			const label: Label = {
+				text: "",
 				column: columnPosition,
 				line: line.lineNumber,
-				editor: editor
-			});
+				editor: editor,
+				distance: distance
+			};
 
-			state.labelKey++;
+			labels.push(label);
 		}
+	}
+
+	labels.sort((a, b) => a.distance - b.distance);
+
+	for (let i = 0; i < labels.length; i++) {
+		const labelText = calcErgoLabel(state.labelKey);
+		labels[i].text = labelText;
+
+		labelMap.set(labelText, labels[i]);
+		state.labelKey++;
 	}
 
 	return labelMap;
 }
 
 function render(state: AppState) {
-	console.time("render");
 	const editors = vscode.window.visibleTextEditors;
 	clearDecorations(state);
 
@@ -122,8 +141,6 @@ function render(state: AppState) {
 	}
 
 	state.labelMap = new Map(maps.flatMap((map) => [...map]));
-	console.timeEnd("render");
-	console.log(state.decorations);
 }
 
 function clearDecorations(state: AppState) {
@@ -135,15 +152,10 @@ function clearDecorations(state: AppState) {
 }
 
 function turnOff(state: AppState) {
-	// const editors = vscode.window.visibleTextEditors;
-
-	// for (const editor of editors) {
-	// 	// editor.setDecorations(hiddenDecoration, []);
-	// 	// editor.setDecorations(labelDecoration, []);
-	// }
 	clearDecorations(state);
 
 	vscode.commands.executeCommand("setContext", "amp-jump.on", false);
+	vscode.window.setStatusBarMessage("");
 	state.active = false;
 }
 
@@ -164,8 +176,6 @@ async function focusEditorAt(
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	const config = vscode.workspace.getConfiguration("amp-jump");
-	const activeBackgroundColor = config.get<string>("dimColor", "rgba(128, 128, 128, 0.5)");
 	const state: AppState = {
 		active: false,
 		labelKey: 62,
@@ -173,11 +183,12 @@ export function activate(context: vscode.ExtensionContext) {
 		decorations: []
 	};
 
-	const activeDecoration = vscode.window.createTextEditorDecorationType({
-		backgroundColor: activeBackgroundColor
-	});
-
 	const disposable = vscode.commands.registerCommand('amp-jump.jumpMode', () => {
+		if (state.active) {
+			turnOff(state);
+			return;
+		}
+
 		vscode.commands.executeCommand("setContext", "amp-jump.on", true);
 		state.active = true;
 		render(state);
@@ -199,6 +210,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		input += char;
+		vscode.window.setStatusBarMessage(`jump: ${input}`);
 
 		const label = state.labelMap.get(input);
 
@@ -210,14 +222,14 @@ export function activate(context: vscode.ExtensionContext) {
 		focusEditorAt(label.editor, label.line, label.column);
 	}
 
-	const labels = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+	const keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
 
 	context.subscriptions.push(
 		disposable,
 		onScroll,
-		vscode.commands.registerCommand("amp-jump.key.escape", turnOff),
+		vscode.commands.registerCommand("amp-jump.key.escape", () => turnOff(state)),
 		// registering all the keybinds commands
-		...labels.map((c) => vscode.commands.registerCommand(`amp-jump.key.${c}`, () => handleInput(c)))
+		...keys.map((c) => vscode.commands.registerCommand(`amp-jump.key.${c}`, () => handleInput(c)))
 	);
 }
 

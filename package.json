@@ -21,6 +21,11 @@
     ],
     "keybindings": [
       {
+        "key": "alt+f",
+        "command": "amp-jump.jumpMode",
+        "when": "!amp-jump.on && editorTextFocus"
+      },
+      {
         "command": "amp-jump.key.escape",
         "key": "escape",
         "when": "amp-jump.on"
