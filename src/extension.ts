@@ -112,7 +112,11 @@ function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, 
 		}
 	}
 
+	// the distance method seems off, should make a util for that
 	labels.sort((a, b) => a.distance - b.distance);
+	// hack limit to the labels array so we don't have labels with 3+ chars
+	labels.splice(537); 
+	
 
 	for (let i = 0; i < labels.length; i++) {
 		const labelText = calcErgoLabel(state.labelKey);
