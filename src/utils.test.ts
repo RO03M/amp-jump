@@ -1,6 +1,24 @@
 import { describe, expect, test } from "vitest";
 import { getColumnsFromLine } from "./utils.js";
 
+function printPositions(text: string, positions: number[]) {
+    const clonedPositions = [...positions];
+    let content = "";
+    clonedPositions.sort((a, b) => a - b);
+    for (let i = 0; i < text.length; i++) {
+        if (clonedPositions.length > 0 && clonedPositions[0] == i) {
+            clonedPositions.shift();
+
+            content += `\x1b[31m${text[i]}\x1b[0m`;
+            continue;
+        }
+
+        content += text[i];
+    }
+
+    console.log(content);
+}
+
 describe("get char positions from a line", () => {
     test("simple case", () => {
         // test test
@@ -33,7 +51,7 @@ describe("get char positions from a line", () => {
         expect(text.charAt(positions[1])).toBe("u");
         expect(text.charAt(positions[2])).toBe("u");
         expect(text.charAt(positions[3])).toBe("f");
-        expect(text.charAt(positions[4])).toBe("\"");
+        expect(text.charAt(positions[4])).toBe("r");
     });
 
     test("line with tabs", () => {
@@ -53,5 +71,24 @@ describe("get char positions from a line", () => {
         const positions = getColumnsFromLine("\t\t\t\t");
 
         expect(positions).toHaveLength(0);
+    });
+
+    test("should get words after common simbols, such as \".\", \"()\", etc", () => {
+        // should get vscode, commands, execute..., setConte..., amp, jump, on and true
+        // so, 8 positions should be returned
+        const text = `vscode.commands.executeCommand("setContext", "amp-jump.on", true);`;
+
+        const positions = getColumnsFromLine(text);
+
+        printPositions(text, positions);
+        expect(positions).toHaveLength(8);
+    });
+
+    test("should not return the position for a single character between two ignore symbols", () => {
+        const text = "const x = useMotionValue(0)";
+        const positions = getColumnsFromLine(text);
+
+        printPositions(text, positions);
+        expect(positions).toHaveLength(2);
     });
 });

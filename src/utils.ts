@@ -1,18 +1,28 @@
 import { type Position } from "vscode";
 
+const ignoreSymbols = new Set([
+	" ", ",", ".", "(", ")", "\"", "'", "´", "\t", "-", "/", ";"
+]);
+
 export function getColumnsFromLine(line: string): number[] {
 	const positions: number[] = [];
 
+	let prevIsIgnoredSymbol = true;
+
 	for (let i = 0; i < line.length; i++) {
+		const currentIsIgnoredSymbol = ignoreSymbols.has(line[i]);
+		const nextIsIgnoreSymbol = ignoreSymbols.has(line[i + 1]);
+
 		if (
-			line[i] !== " " &&
-			line[i] !== "\t" &&
-			(i === 0 || line[i - 1] === " " || line[i - 1] === "\t")
+			!currentIsIgnoredSymbol &&
+			(i === 0 || prevIsIgnoredSymbol)
 		) {
-			if (i + 1 < line.length && line[i + 1] !== " ") {
+			if (i + 1 < line.length && !nextIsIgnoreSymbol) {
 				positions.push(i);
 			}
 		}
+
+		prevIsIgnoredSymbol = currentIsIgnoredSymbol;
 	}
 
 	return positions;
