@@ -4,6 +4,11 @@
     "name": "romera",
     "url": "https://romera.dev"
   },
+  "icon": "icon.png",
+  "publisher": "romera",
+  "repository": {
+    "url": "https://github.com/RO03M/amp-jump"
+  },
   "displayName": "amp.jump",
   "description": "Quickly jump to any part of the screen",
   "version": "0.0.1",
