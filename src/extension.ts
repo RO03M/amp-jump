@@ -27,8 +27,8 @@ interface AppState {
 
 function createLabelDecoration(): vscode.TextEditorDecorationType {
 	const config = vscode.workspace.getConfiguration("amp-jump");
-	const labelColor = config.get<string>("labelColor", "#FFA500");
-	const labelBg = config.get<string>("labelBackgroundColor", "transparent");
+	const labelColor = config.get<string>("label-color", "#FFA500");
+	const labelBg = config.get<string>("label-background-color", "transparent");
 
 	return vscode.window.createTextEditorDecorationType({
 		color: "transparent", 

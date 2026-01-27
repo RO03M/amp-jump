@@ -28,6 +28,27 @@
         "title": "Jump Mode"
       }
     ],
+    "configuration": {
+      "title": "amp.jump",
+      "type": "object",
+      "properties": {
+        "amp.jump.jump-label-alphabet": {
+          "type": "string",
+          "default": "abcdefghijklmnopqrstuvwxyz",
+          "description": "Char list that will be used to generate the jump labels"
+        },
+        "amp.jump.label-color": {
+          "type": "string",
+          "default": "#FFA500",
+          "description": "The color of the label font"
+        },
+        "amp.jump.label-background-color": {
+          "type": "string",
+          "default": "transparent",
+          "description": "The color of the background of the label. Remember to choose a good contrast with the label font color"
+        }
+      }
+    },
     "keybindings": [
       {
         "key": "alt+f",
