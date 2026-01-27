@@ -11,7 +11,7 @@
   },
   "displayName": "amp.jump",
   "description": "Quickly jump to any part of the screen",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "engines": {
     "vscode": "^1.108.0"
@@ -32,11 +32,31 @@
       {
         "key": "alt+f",
         "command": "amp-jump.jumpMode",
-        "when": "!amp-jump.on && editorTextFocus"
+        "when": "!amp-jump.on"
       },
       {
         "command": "amp-jump.key.escape",
         "key": "escape",
+        "when": "amp-jump.on"
+      },
+      {
+        "command": "amp-jump.key.escape",
+        "key": "up",
+        "when": "amp-jump.on"
+      },
+      {
+        "command": "amp-jump.key.escape",
+        "key": "right",
+        "when": "amp-jump.on"
+      },
+      {
+        "command": "amp-jump.key.escape",
+        "key": "down",
+        "when": "amp-jump.on"
+      },
+      {
+        "command": "amp-jump.key.left",
+        "key": "left",
         "when": "amp-jump.on"
       },
       {

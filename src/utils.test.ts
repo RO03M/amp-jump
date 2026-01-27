@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getColumnsFromLine } from "./utils.js";
+import { calcErgoLabel, getColumnsFromLine } from "./utils.js";
 
 function printPositions(text: string, positions: number[]) {
     const clonedPositions = [...positions];
@@ -90,5 +90,6 @@ describe("get char positions from a line", () => {
 
         printPositions(text, positions);
         expect(positions).toHaveLength(2);
+        console.log(calcErgoLabel(599));
     });
 });

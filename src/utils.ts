@@ -1,4 +1,4 @@
-import { type Position } from "vscode";
+import { type Position, workspace } from "vscode";
 
 const ignoreSymbols = new Set([
 	" ", ",", ".", "(", ")", "\"", "'", "´", "\t", "-", "/", ";"
@@ -49,8 +49,14 @@ export function calcErgoLabel(index: number): string {
 	return label;
 }
 
-export function calcLabel(key: number): string {
-	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+export function labelAlphabet() {
+	const config = workspace.getConfiguration("amp-jump");
+	const alphabet = config.get<string>("jump-label-alphabet", "abcdefghijklmnopqrstuvwxyz");
+
+	return alphabet;
+}
+
+export function calcLabel(key: number, chars: string): string {
 	const base = chars.length;
 
 	let result = "";

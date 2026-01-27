@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { calcErgoLabel, calcLabel, chunk, squaredDistance, getColumnsFromLine } from './utils.js';
+import { calcErgoLabel, calcLabel, chunk, squaredDistance, getColumnsFromLine, labelAlphabet } from './utils.js';
 
 interface Label {
 	text: string;
@@ -22,6 +22,7 @@ interface AppState {
 	labelMap: Map<string, Label>;
 	labelKey: number;
 	decorations: vscode.TextEditorDecorationType[];
+	alphabet: string;
 }
 
 function createLabelDecoration(): vscode.TextEditorDecorationType {
@@ -114,12 +115,10 @@ function buildLabelMap(editor: vscode.TextEditor, state: AppState): Map<string, 
 
 	// the distance method seems off, should make a util for that
 	labels.sort((a, b) => a.distance - b.distance);
-	// hack limit to the labels array so we don't have labels with 3+ chars
-	labels.splice(537); 
+	labels.splice(state.alphabet.length * state.alphabet.length);
 	
-
 	for (let i = 0; i < labels.length; i++) {
-		const labelText = calcErgoLabel(state.labelKey);
+		const labelText = calcLabel(state.labelKey, state.alphabet);
 		labels[i].text = labelText;
 
 		labelMap.set(labelText, labels[i]);
@@ -134,7 +133,7 @@ function render(state: AppState) {
 	clearDecorations(state);
 
 	const maps: Map<string, Label>[] = [];
-	state.labelKey = 62;
+	state.labelKey = state.alphabet.length;
 
 	for (const editor of editors) {
 		const labelMap = buildLabelMap(editor, state);
@@ -182,9 +181,10 @@ async function focusEditorAt(
 export function activate(context: vscode.ExtensionContext) {
 	const state: AppState = {
 		active: false,
-		labelKey: 62,
+		labelKey: 0,
 		labelMap: new Map(),
-		decorations: []
+		decorations: [],
+		alphabet: labelAlphabet()
 	};
 
 	const disposable = vscode.commands.registerCommand('amp-jump.jumpMode', () => {
@@ -194,8 +194,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		vscode.commands.executeCommand("setContext", "amp-jump.on", true);
+		state.alphabet = labelAlphabet(); // calling this here so when the user changed the config it reassign on command activation
 		state.active = true;
 		render(state);
+		vscode.commands.executeCommand("closeFindWidget");
 	});
 
 	const onScroll = vscode.window.onDidChangeTextEditorVisibleRanges(() => {
